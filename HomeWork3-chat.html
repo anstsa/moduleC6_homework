@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Homework 3</title>
+</head>
+<style>
+  .input_block {
+    display: inline;
+  }
+  .btn {
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: none;
+    cursor: pointer;
+    margin: 5px 5px;
+    padding: 10px 15px;
+    border-radius: 1px;
+    font-size: 12px;
+    line-height: 15px;
+    text-transform: uppercase;
+    color: white;
+    background: #315efb;
+    transition: 0.3s;
+  }
+  .btn:hover {
+    box-shadow: 0px 2px 8px 2px rgba(141,150,178,.3);
+    transform: scale(1.05);
+  }
+  .msg_user {    
+    border: 3px solid blue;
+    padding: 10px;    
+    border-radius: 10px;
+    text-align: right;
+    margin-top: 0px;
+    margin-bottom: 0px;    
+   }
+  .msg_server {
+    border: 3px solid blue;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: left; 
+    margin-top: 0px;
+    margin-bottom: 0px;   
+  }
+  .input {
+    border: 3px solid blue;
+    padding: 10px;
+    width: 300px;
+  }
+  .chat {
+    border: 3px solid blue;
+    padding: 10px;
+    width: 540px;
+    margin-top:10px;
+  }
+  .msg_user_div {
+    display: flex;
+    flex-direction: row-reverse;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  .msg_server_div {
+    display: flex;
+    flex-direction: row;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+</style>
+<body>
+  <h1>Задание C6.3 - Чат</h1>
+  <p> Введите /end для прекращения соединения</p>
+  <div class="input_block">
+     <input class="input" type="text" placeholder="Поле для отправки сообщения">
+     <button class="btn btn_send">Отправить</button>
+     <button class="btn btn_geo">Геолокация</button>      
+  </div>
+  <div class="chat"></div>
+<script>
+  const wsUri = "wss://echo-ws-service.herokuapp.com";
+  const btnSend = document.querySelector('.btn_send');
+  const chatNote = document.querySelector('.chat');
+  const btnGeo = document.querySelector('.btn_geo');
+
+  function writeToScreenServer(message) {
+    let divMsg = document.createElement("div");
+    divMsg.classList = "msg_server_div";
+    divMsg.innerHTML = message;
+    chatNote.appendChild(divMsg);
+  }
+
+  function writeToScreenUser(message) {
+    let divMsg = document.createElement("div");
+    divMsg.classList = "msg_user_div"
+    divMsg.innerHTML = message;
+    chatNote.appendChild(divMsg);
+  }
+  
+  let websocket;
+  websocket = new WebSocket(wsUri);
+  websocket.onopen = function(evt) {
+    writeToScreenServer(`
+      <div><p class="msg_server">Соедение установлено</p></div>
+      <div></div>`);
+    };
+  websocket.onclose = function(evt) {
+    writeToScreenServer(`
+      <div><p class="msg_server">Cоедение разорвано</p></div>
+      <div></div>`);
+  };
+  websocket.onmessage = function(evt) {
+    writeToScreenServer(`
+      <div><p class="msg_server">${evt.data}</p></div>
+      <div></div>`);
+  };
+  websocket.onerror = function(evt) {
+    writeToScreenServer(`
+      <div><p class="msg_server">Ошибка: ${evt.data}</p></div>
+      <div></div>`);
+  };
+  
+
+  btnSend.addEventListener('click', () => {
+    const msgUser = document.querySelector('.input').value;
+    console.log("msgUser",)
+    writeToScreenUser(`
+          <div></div>
+          <div><p class="msg_user">${msgUser}</p></div>`);
+    if (msgUser == "/end") {
+      websocket.close();
+    }
+    else {
+      websocket.send(msgUser);
+    };
+  });
+
+
+  const error = () => {
+    writeToScreenServer(`
+      <div><p class="msg_server">Невозможно получить ваше местоположения…</p></div>
+      <div></div>`);
+  }
+
+  const success = (position) => {
+    console.log('position', position);
+    const latitude  = position.coords.latitude;
+    const longitude = position.coords.longitude;
+
+    writeToScreenServer(`
+      <div class="msg_server">
+        <p>Широта: ${latitude} °, Долгота: ${longitude} °</p>
+        <a href="https://www.openstreetmap.org/#map=18/${latitude}/${longitude}" target="_blank">Ссылка на карту</a>
+      </div>
+      <div></div>`);
+  }
+
+  btnGeo.addEventListener('click', () => {
+    writeToScreenUser(`
+      <div></div>
+      <div><p class="msg_user">Запрос геолокации</p></div>`);
+    if (!navigator.geolocation) {
+       writeToScreenServer(`
+          <div><p class="msg_server">Геолокация не поддерживается вашим браузером</p></div>
+          <div></div>`);
+    } 
+    else {
+      navigator.geolocation.getCurrentPosition(success, error);
+    }   
+  });
+  
+</script>
+</body>
+</html>
