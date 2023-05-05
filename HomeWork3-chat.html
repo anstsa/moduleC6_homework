@@ -103,33 +103,23 @@
   let websocket;
   websocket = new WebSocket(wsUri);
   websocket.onopen = function(evt) {
-    writeToScreenServer(`
-      <div><p class="msg_server">Соедение установлено</p></div>
-      <div></div>`);
+    writeToScreenServer(`<div><p class="msg_server">Соедение установлено</p></div>`);
     };
   websocket.onclose = function(evt) {
-    writeToScreenServer(`
-      <div><p class="msg_server">Cоедение разорвано</p></div>
-      <div></div>`);
+    writeToScreenServer(`<div><p class="msg_server">Cоедение разорвано</p></div>`);
   };
   websocket.onmessage = function(evt) {
-    writeToScreenServer(`
-      <div><p class="msg_server">${evt.data}</p></div>
-      <div></div>`);
+    writeToScreenServer(`<div><p class="msg_server">${evt.data}</p></div>`);
   };
   websocket.onerror = function(evt) {
-    writeToScreenServer(`
-      <div><p class="msg_server">Ошибка: ${evt.data}</p></div>
-      <div></div>`);
+    writeToScreenServer(`<div><p class="msg_server">Ошибка: ${evt.data}</p></div>`);
   };
   
 
   btnSend.addEventListener('click', () => {
     const msgUser = document.querySelector('.input').value;
     console.log("msgUser",)
-    writeToScreenUser(`
-          <div></div>
-          <div><p class="msg_user">${msgUser}</p></div>`);
+    writeToScreenUser(`<div><p class="msg_user">${msgUser}</p></div>`);
     if (msgUser == "/end") {
       websocket.close();
     }
@@ -140,9 +130,7 @@
 
 
   const error = () => {
-    writeToScreenServer(`
-      <div><p class="msg_server">Невозможно получить ваше местоположения…</p></div>
-      <div></div>`);
+    writeToScreenServer(`<div><p class="msg_server">Невозможно получить ваше местоположения…</p></div>`);
   }
 
   const success = (position) => {
@@ -152,26 +140,20 @@
 
     writeToScreenServer(`
       <div class="msg_server">
-        <p>Широта: ${latitude} °, Долгота: ${longitude} °</p>
+        <p style="margin-top: 0px">Широта: ${latitude} °, Долгота: ${longitude} °</p>
         <a href="https://www.openstreetmap.org/#map=18/${latitude}/${longitude}" target="_blank">Ссылка на карту</a>
-      </div>
-      <div></div>`);
+      </div>`);
   }
 
   btnGeo.addEventListener('click', () => {
-    writeToScreenUser(`
-      <div></div>
-      <div><p class="msg_user">Запрос геолокации</p></div>`);
+    writeToScreenUser(`<div><p class="msg_user">Запрос геолокации</p></div>`);
     if (!navigator.geolocation) {
-       writeToScreenServer(`
-          <div><p class="msg_server">Геолокация не поддерживается вашим браузером</p></div>
-          <div></div>`);
+       writeToScreenServer(`<div><p class="msg_server">Геолокация не поддерживается вашим браузером</p></div>`);
     } 
     else {
       navigator.geolocation.getCurrentPosition(success, error);
     }   
-  });
-  
+  });  
 </script>
 </body>
 </html>
